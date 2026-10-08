@@ -68,7 +68,7 @@ export class BrowserWASQLiteDriver implements SQLiteDriver {
   readonly [SQLITE_DRIVER_SHARED_LOGICAL_SCHEDULING_KEY] = {}
   private readonly database: BrowserWASQLiteDatabase
   private readonly executionState: DatabaseExecutionState
-  private closed = false
+  private closing: Promise<void> | null = null
 
   constructor(options: BrowserWASQLiteDriverOptions) {
     assertDatabaseShape(options.database)
@@ -127,15 +127,20 @@ export class BrowserWASQLiteDriver implements SQLiteDriver {
     return this.transaction(fn)
   }
 
-  async close(): Promise<void> {
-    if (this.closed) {
-      return
-    }
-    this.closed = true
-
-    if (typeof this.database.close === `function`) {
-      await Promise.resolve(this.database.close())
-    }
+  /**
+   * Closes the database after every operation queued before the call has
+   * settled. wa-sqlite's `sqlite3_close` refuses with SQLITE_BUSY ("unable to
+   * close due to unfinalized statements") while a statement is still stepping,
+   * and a worker that starts each message as it arrives would otherwise run the
+   * close next to it.
+   */
+  close(): Promise<void> {
+    this.closing ??= this.enqueue(async () => {
+      if (typeof this.database.close === `function`) {
+        await Promise.resolve(this.database.close())
+      }
+    })
+    return this.closing
   }
 
   getDatabase(): BrowserWASQLiteDatabase {
