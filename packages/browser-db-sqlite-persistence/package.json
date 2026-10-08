@@ -1,12 +1,12 @@
 {
-  "name": "@tanstack/browser-db-sqlite-persistence",
-  "version": "0.2.26",
+  "name": "@tifu-dev/browser-db-sqlite-persistence",
+  "version": "0.2.26-tifu.1",
   "description": "Browser wa-sqlite persisted collection adapter for TanStack DB",
   "author": "TanStack Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TanStack/db.git",
+    "url": "git+https://github.com/tifu-dev/db.git",
     "directory": "packages/browser-db-sqlite-persistence"
   },
   "homepage": "https://tanstack.com/db",
@@ -44,6 +44,9 @@
       }
     },
     "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "sideEffects": false,
   "files": [
